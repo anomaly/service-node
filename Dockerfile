@@ -17,7 +17,8 @@ FROM --platform=linux/amd64 ubuntu:${BASE_IMAGE} as requirements-stage
 # python 3.10 seems to want python3-tk installed
 RUN apt update \
     && apt -y upgrade \
-    && apt install -y --no-install-recommends gcc python3-dev build-essential libpq-dev python3-tk \
+    && apt install -y --no-install-recommends gcc python3-dev \
+    python3-pip build-essential libpq-dev python3-tk \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -38,18 +39,18 @@ FROM ubuntu:${BASE_IMAGE}
 RUN apt update \
     && apt -y upgrade \
     && apt install -y --no-install-recommends libpq-dev \
-    python3-tk postgresql-client curl \
+    python3-tk python3-pip postgresql-client curl \
     && apt clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Work in the temporary directory for the build phase
 WORKDIR /opt
 
-COPY --from=requirements-stage /tmp/Taskfile.yml /opt/Taskfile.yml
-COPY --from=requirements-stage /tmp/requirements.txt /opt/requirements.txt
+COPY --from=requirements-stage /tmp/Taskfile.yml Taskfile.yml
+COPY --from=requirements-stage /tmp/requirements.txt requirements.txt
 
 # Install python package we need
-RUN pip install --no-cache-dir --upgrade -r /opt/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 CMD ["bash"]
 
